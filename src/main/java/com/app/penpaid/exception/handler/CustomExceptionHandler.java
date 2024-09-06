@@ -30,7 +30,6 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     private ApiError buildErrorMessage(String path, Exception exception) {
         String errorCode = (exception instanceof PenPaidException) ? extractCustomExceptionCode((PenPaidException) exception) : "UNKNOWN_ERROR_CODE";
         String errorDescription = exception.getLocalizedMessage();
-        log.error("Exception stackTrace",exception);
         return new ApiError(path,errorCode,errorDescription);
     }
 

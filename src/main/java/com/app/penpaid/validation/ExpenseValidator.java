@@ -38,7 +38,6 @@ public class ExpenseValidator {
             throw new InvalidExpense(propertiesReaderUtil.getValue("E_101"), "E_101");
         }else {
             expenseList.forEach(expense -> {
-                System.out.println(expense);
                 if (isEmptyExpense(expense)) {
                     throw new InvalidExpense(propertiesReaderUtil.getValue("E_101"), "E_101");
                 }
