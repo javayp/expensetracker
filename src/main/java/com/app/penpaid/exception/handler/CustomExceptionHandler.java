@@ -1,7 +1,7 @@
 package com.app.penpaid.exception.handler;
 
 import com.app.penpaid.exception.model.ApiError;
-import com.app.penpaid.exception.parent.ParentException;
+import com.app.penpaid.exception.parent.PenPaidException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -28,19 +28,15 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     private ApiError buildErrorMessage(String path, Exception exception) {
-        String errorType=getErrorType(exception.getClass().getCanonicalName());
-        String errorCode=(errorType.equals(JAVA_EXCEPTION))?JAVA_EXCEPTION_CODE:extractCustomExceptionCode((ParentException) exception);
-        String errorDescription=exception.getLocalizedMessage();
+        String errorCode = (exception instanceof PenPaidException) ? extractCustomExceptionCode((PenPaidException) exception) : "UNKNOWN_ERROR_CODE";
+        String errorDescription = exception.getLocalizedMessage();
         log.error("Exception stackTrace",exception);
-        return new ApiError(path,errorCode,errorType,errorDescription);
+        return new ApiError(path,errorCode,errorDescription);
     }
 
-    private String getErrorType(String exception_canonicalName){
-        return (exception_canonicalName.contains(JAVA_KEYWORD))?JAVA_EXCEPTION:JAVA_CUSTOM_EXCEPTION;
-    }
 
-    private String extractCustomExceptionCode(ParentException exception){
-        return exception.getCode();
+    private String extractCustomExceptionCode(PenPaidException penpaidException){
+        return penpaidException.getCode();
     }
 
 

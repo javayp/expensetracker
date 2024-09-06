@@ -11,6 +11,5 @@ public class ApiError {
 
     private String path;
     private String errorCode;
-    private String errorType;
     private String errorDescription;
 }
