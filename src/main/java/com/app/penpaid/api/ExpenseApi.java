@@ -9,11 +9,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.*;
 
 @RestController
-@RequestMapping("/expense/api")
+@RequestMapping("/api/expense/")
 public class ExpenseApi {
 
     private final ExpenseService expenseService;
@@ -35,8 +34,19 @@ public class ExpenseApi {
     @GetMapping("/get/{expenseId}")
     public ResponseEntity<Expense> retrieveExpense(@PathVariable("expenseId") String expenseId) {
         expenseValidator.validateExpenseId(expenseId);
-        return new ResponseEntity<>(expenseService.retriveExpense(expenseId), CREATED);
+        return new ResponseEntity<>(expenseService.retriveExpense(expenseId), OK);
     }
 
+    @DeleteMapping("/delete/{expenseId}")
+    public ResponseEntity<?> deleteExpenseId(@PathVariable("expenseId") String expenseId) {
+        expenseValidator.validateExpenseId(expenseId);
+        boolean isDeleted = expenseService.deleteExpense(expenseId);
+        return new ResponseEntity<>(isDeleted ? NO_CONTENT : INTERNAL_SERVER_ERROR);
+    }
+
+    @GetMapping("/latest")
+    public ResponseEntity<List<Expense>> retrieveLatestExpense() {
+        return new ResponseEntity<>(expenseService.getLatestExpense(), OK);
+    }
 
 }

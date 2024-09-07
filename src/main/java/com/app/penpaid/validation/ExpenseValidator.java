@@ -1,6 +1,7 @@
 package com.app.penpaid.validation;
 
-import com.app.penpaid.exception.custom.InvalidExpense;
+import com.app.penpaid.exception.custom.ApiInvalidExpenseException;
+import com.app.penpaid.exception.custom.ApiInvalidExpenseIdException;
 import com.app.penpaid.model.Expense;
 import com.app.penpaid.util.PropertiesReaderUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,18 +29,18 @@ public class ExpenseValidator {
     private void checkForNegativeAmount(List<Expense> expenseList){
         expenseList.forEach(expense -> {
             if (expense.getExpenseAmount() <= 0.0) {
-                throw new InvalidExpense(propertiesReaderUtil.getValue("E_001"), "E_001");
+                throw new ApiInvalidExpenseException(propertiesReaderUtil.getValue("A_001"), "A_001");
             }
         });
     }
 
     private void checkForEmptyBody(List<Expense> expenseList){
         if (CollectionUtils.isEmpty(expenseList)) {
-            throw new InvalidExpense(propertiesReaderUtil.getValue("E_101"), "E_101");
+            throw new ApiInvalidExpenseException(propertiesReaderUtil.getValue("A_002"), "A_002");
         }else {
             expenseList.forEach(expense -> {
                 if (isEmptyExpense(expense)) {
-                    throw new InvalidExpense(propertiesReaderUtil.getValue("E_101"), "E_101");
+                    throw new ApiInvalidExpenseException(propertiesReaderUtil.getValue("A_002"), "A_002");
                 }
             });
         }
@@ -55,8 +56,8 @@ public class ExpenseValidator {
     }
 
     public void validateExpenseId(String expenseId) {
-        if (Objects.isNull(expenseId) || expenseId.isEmpty()) {
-            throw new InvalidExpense(propertiesReaderUtil.getValue("E_102"), "E_102");
+        if (expenseId.length() != 15) {
+            throw new ApiInvalidExpenseIdException(propertiesReaderUtil.getValue("A_003"), "A_003");
         }
     }
 }

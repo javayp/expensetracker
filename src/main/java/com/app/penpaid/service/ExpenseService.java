@@ -1,19 +1,20 @@
 package com.app.penpaid.service;
 
-import com.app.penpaid.exception.custom.MongoDataInsertException;
-import com.app.penpaid.exception.custom.MongoDocumentNotFoundException;
+import com.app.penpaid.exception.custom.*;
 import com.app.penpaid.factory.MongoClientFactory;
 import com.app.penpaid.model.Expense;
 import com.app.penpaid.query.ExpenseQuery;
 import com.app.penpaid.util.ExpenseUtil;
 import com.app.penpaid.util.PropertiesReaderUtil;
-import com.mongodb.BasicDBObject;
+import com.mongodb.MongoException;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.result.DeleteResult;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.app.penpaid.constants.PenPaidConstants.EXPENSE;
@@ -37,35 +38,69 @@ public class ExpenseService {
             ExpenseUtil.modifyExpense(expenseList);
             if (expenseList.size() > 1) {
                 log.info("Creating multiple expenses of size: {}", expenseList.size());
-                MongoCollection<Expense> collection = mongoClientFactory.getCollection(PENPAID, EXPENSE, Expense.class);
-                return collection.insertMany(expenseList).wasAcknowledged();
+                MongoCollection<Expense> expenseCollection = mongoClientFactory.getCollection(PENPAID, EXPENSE, Expense.class);
+                return expenseCollection.insertMany(expenseList).wasAcknowledged();
             } else {
                 log.info("Creating a single expense");
                 MongoCollection<Expense> collection = mongoClientFactory.getCollection(PENPAID, EXPENSE, Expense.class);
                 return collection.insertOne(expenseList.get(0)).wasAcknowledged();
             }
-        } catch (Exception e) {
+        }
+        catch (MongoException e) {
+            log.error("General Mongo exception:", e);
+            throw new MongoGeneralException(propertiesReaderUtil.getValue("AD_000"), "AD_000");
+        }
+        catch (Exception e) {
             log.error("Error while creating expense:", e);
-            throw new MongoDataInsertException(propertiesReaderUtil.getValue("D_001"), "D_001");
+            throw new ApiInternalServerException(propertiesReaderUtil.getValue("AD_003"), "AD_003");
         }
     }
 
+
     public Expense retriveExpense(String expenseId) {
         try {
-            MongoCollection<Expense> collection = mongoClientFactory.getCollection(PENPAID, EXPENSE, Expense.class);
-            Expense expense = collection.aggregate(ExpenseQuery.findByExpenseId(expenseId)).first();
+            MongoCollection<Expense> expenseCollection = mongoClientFactory.getCollection(PENPAID, EXPENSE, Expense.class);
+            Expense expense = expenseCollection.aggregate(ExpenseQuery.findByExpenseId(expenseId)).first();
             if (expense == null) {
                 log.error("Expense not found for id: {}", expenseId);
-                throw new MongoDocumentNotFoundException(propertiesReaderUtil.getValue("A_001"), "A_001");
+                throw new MongoDocumentNotFoundException(propertiesReaderUtil.getValue("AD_001"), "AD_001");
             }else {
                 return expense;
             }
         }catch (MongoDocumentNotFoundException e) {
             throw e;
+        }catch (Exception e) {
+            log.error("Error while retrieving expense:", e);
+            throw new ApiInternalServerException(propertiesReaderUtil.getValue("AD_003"), "AD_003");
+        }
+    }
+
+    public boolean deleteExpense(String expenseId) {
+        try {
+            MongoCollection<Expense> expenseCollection = mongoClientFactory.getCollection(PENPAID, EXPENSE, Expense.class);
+            DeleteResult deleteResult = expenseCollection.deleteOne(new Document("expenseId", expenseId));
+            if (deleteResult.getDeletedCount() == 0) {
+                log.error("Expense not found for expenseId: {}", expenseId);
+                throw new MongoInvalidExpenseIdException(propertiesReaderUtil.getValue("AD_001"), "AD_001");
+            }else {
+                return deleteResult.wasAcknowledged();
+            }
+        }catch (MongoInvalidExpenseIdException e) {
+            throw e;
         }
         catch (Exception e) {
-            log.error("Error while retrieving expense:", e);
-            throw new MongoDataInsertException(propertiesReaderUtil.getValue("D_001"), "D_001");
+            log.error("Error while deleting expense:", e);
+            throw new ApiInternalServerException(propertiesReaderUtil.getValue("AD_003"), "AD_003");
+        }
+    }
+
+    public List<Expense> getLatestExpense() {
+        try {
+            MongoCollection<Expense> expenseCollection = mongoClientFactory.getCollection(PENPAID, EXPENSE, Expense.class);
+            return expenseCollection.aggregate(ExpenseQuery.getLatestExpense(), Expense.class).into(new ArrayList<>());
+        }catch (MongoException e){
+            log.error("General Mongo exception:", e);
+            throw new MongoGeneralException(propertiesReaderUtil.getValue("AD_000"), "AD_000");
         }
     }
 }
