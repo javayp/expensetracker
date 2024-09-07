@@ -10,7 +10,7 @@ public class ExpenseUtil {
 
     public static void modifyExpense(List<Expense> expenseList) {
         expenseList.forEach(expense -> {
-                    expense.setExpenseCreationDate(LocalDateTime.now(ZoneId.of("UTC")));
+                    expense.setExpenseEntryMoment(LocalDateTime.now(ZoneId.of("UTC")));
                     expense.setExpenseId(RandomKeyGeneratorUtil.generateRandomKey());
                 }
         );

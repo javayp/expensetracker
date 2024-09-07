@@ -51,6 +51,12 @@ public class ExpenseValidator {
                 Double.compare(expense.getExpenseAmount(), 0.0) == 0 &&
                 CollectionUtils.isEmpty(expense.getExpenseTags()) &&
                 Objects.isNull(expense.getExpenseDescription()) &&
-                Objects.isNull(expense.getExpenseCreationDate());
+                Objects.isNull(expense.getExpenseEntryMoment());
+    }
+
+    public void validateExpenseId(String expenseId) {
+        if (Objects.isNull(expenseId) || expenseId.isEmpty()) {
+            throw new InvalidExpense(propertiesReaderUtil.getValue("E_102"), "E_102");
+        }
     }
 }

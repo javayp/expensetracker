@@ -1,11 +1,7 @@
 package com.app.penpaid.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.mongodb.BasicDBObject;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.bson.codecs.pojo.annotations.BsonProperty;
-import org.bson.types.ObjectId;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -25,5 +21,5 @@ public class Expense {
 
     private String expenseDescription;
 
-    private LocalDateTime expenseCreationDate;
+    private LocalDateTime expenseEntryMoment;
 }

@@ -1,10 +1,10 @@
 package com.app.penpaid.constants;
 
 public class PenPaidConstants {
-    public final static  String JAVA_EXCEPTION= "JAVA_EXCEPTION";
-    public final static  String JAVA_CUSTOM_EXCEPTION= "JAVA_CUSTOM_EXCEPTION";
-    public final static  String JAVA_KEYWORD= "java";
+    //Database name
+    public final static  String PENPAID= "penpaid";
 
-    public final static String JAVA_EXCEPTION_CODE="SAM-J001";
+    //Collection name
+    public final static  String EXPENSE= "expense";
 
 }
